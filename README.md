@@ -33,10 +33,10 @@ uv run src/server.py
 
 ```bash
 # Build the image
-docker build --platform linux/amd64 -t my-agent .
+docker build --platform linux/arm64 -t fhir-purple-agent .
 
 # Run the container
-docker run -p 9009:9009 my-agent
+docker run --env-file .env -p 9002:9002 fhir-purple-agent
 ```
 
 ## Testing
@@ -50,7 +50,7 @@ uv sync --extra test
 # Start your agent (uv or docker; see above)
 
 # Run tests against your running agent URL
-uv run pytest --agent-url http://localhost:9009
+uv run pytest --agent-url http://localhost:9002
 ```
 
 ## Publishing
