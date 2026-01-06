@@ -1,6 +1,6 @@
 # A2A Agent Template
 
-A minimal template for building [A2A (Agent-to-Agent)](https://a2a-protocol.org/latest/) agents.
+A simple agent using A2A messaging interface
 
 ## Project Structure
 
@@ -19,18 +19,6 @@ pyproject.toml    # Python dependencies
    └─ test-and-publish.yml # CI workflow
 ```
 
-## Getting Started
-
-1. **Create your repository** - Click "Use this template" to create your own repository from this template
-
-2. **Implement your agent** - Add your agent logic to [`src/agent.py`](src/agent.py)
-
-3. **Configure your agent card** - Fill in your agent's metadata (name, skills, description) in [`src/server.py`](src/server.py)
-
-4. **Write your tests** - Add custom tests for your agent in [`tests/test_agent.py`](tests/test_agent.py)
-
-For a concrete example of implementing an agent using this template, see this [draft PR](https://github.com/RDI-Foundation/agent-template/pull/8).
-
 ## Running Locally
 
 ```bash
@@ -45,7 +33,7 @@ uv run src/server.py
 
 ```bash
 # Build the image
-docker build -t my-agent .
+docker build --platform linux/amd64 -t my-agent .
 
 # Run the container
 docker run -p 9009:9009 my-agent
