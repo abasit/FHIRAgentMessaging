@@ -1,4 +1,6 @@
 import argparse
+import logging
+
 import uvicorn
 
 from a2a.server.apps import A2AStarletteApplication
@@ -12,9 +14,17 @@ from a2a.types import (
 
 from executor import Executor
 
+# Configure logging
+logging.basicConfig(
+    level=logging.WARNING,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logging.getLogger("fhir_purple_agent").setLevel(logging.DEBUG)
+logging.getLogger("LiteLLM").setLevel(logging.WARNING)
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Run the A2A agent.")
+    parser = argparse.ArgumentParser(description="Run the A2A-message-based purple agent.")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Host to bind the server")
     parser.add_argument("--port", type=int, default=9002, help="Port to bind the server")
     parser.add_argument("--card-url", type=str, help="URL to advertise in the agent card")
@@ -47,6 +57,10 @@ def main():
         agent_card=agent_card,
         http_handler=request_handler,
     )
+
+    logger = logging.getLogger("fhir_purple_agent")
+    logger.info(f"Starting purple agent at {args.host}:{args.port}")
+
     uvicorn.run(server.build(), host=args.host, port=args.port)
 
 

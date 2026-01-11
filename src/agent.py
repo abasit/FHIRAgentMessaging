@@ -1,11 +1,11 @@
-import litellm
-from a2a.server.tasks import TaskUpdater
-from a2a.types import Message, TaskState, Part, TextPart
-from a2a.utils import get_message_text, new_agent_text_message
-
 import logging
 
-logging.getLogger("LiteLLM").setLevel(logging.WARNING)
+import litellm
+from a2a.server.tasks import TaskUpdater
+from a2a.types import Message, Part, TextPart
+from a2a.utils import get_message_text
+
+logger = logging.getLogger("fhir_purple_agent")
 
 
 class Agent:
@@ -25,7 +25,7 @@ Follow any instructions as to the formatting of the final answer."""
         """Process message and respond using LLM."""
         user_input = get_message_text(message)
 
-        print(f"Purple agent received:\n{user_input}\n")
+        logger.info(f"Received message:\n{user_input}")
 
         self.messages.append({
             "role": "user",
@@ -33,6 +33,7 @@ Follow any instructions as to the formatting of the final answer."""
         })
 
         try:
+            logger.debug("Calling LLM...")
             model_response = litellm.completion(
                 messages=self.messages,
                 model="openai/gpt-4o",
@@ -51,7 +52,7 @@ Follow any instructions as to the formatting of the final answer."""
                 "content": content,
             })
 
-            print(f"Purple agent responding:\n{content}\n")
+            logger.info(f"Responding:\n{content}")
 
             await updater.add_artifact(
                 parts=[Part(root=TextPart(text=content))],
@@ -59,9 +60,8 @@ Follow any instructions as to the formatting of the final answer."""
             )
 
         except Exception as e:
-            error_msg = f"Error: {str(e)}"
-            print(f"Purple agent error: {error_msg}")
+            logger.error(f"Error during LLM call: {e}", exc_info=True)
             await updater.add_artifact(
-                parts=[Part(root=TextPart(text=error_msg))],
+                parts=[Part(root=TextPart(text=f"Error: {str(e)}"))],
                 name="Error",
             )
