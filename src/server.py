@@ -1,3 +1,13 @@
+"""
+FHIR Purple Agent Server (Messaging Mode)
+
+A2A-compatible agent that answers medical questions using FHIR data.
+Receives tool calls via A2A messaging from the green agent.
+
+Usage:
+    python server.py --host 0.0.0.0 --port 9002
+"""
+
 import argparse
 import logging
 
@@ -6,41 +16,34 @@ import uvicorn
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.tasks import InMemoryTaskStore
-from a2a.types import (
-    AgentCapabilities,
-    AgentCard,
-    AgentSkill,
-)
+from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 
 from executor import Executor
 
-# Configure logging
-logging.basicConfig(
-    level=logging.WARNING,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logging.getLogger("fhir_purple_agent").setLevel(logging.DEBUG)
+logging.basicConfig(level=logging.WARNING)
+logging.getLogger("fhir_purple_agent").setLevel(logging.INFO)
 logging.getLogger("LiteLLM").setLevel(logging.WARNING)
 
+logger = logging.getLogger("fhir_purple_agent")
 
 def main():
-    parser = argparse.ArgumentParser(description="Run the A2A-message-based purple agent.")
+    parser = argparse.ArgumentParser(description="Run the FHIR purple agent (messaging mode).")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Host to bind the server")
-    parser.add_argument("--port", type=int, default=9002, help="Port to bind the server")
-    parser.add_argument("--card-url", type=str, help="URL to advertise in the agent card")
+    parser.add_argument("--port", type=int, default=9009, help="Port to bind the server")
+    parser.add_argument("--card-url", type=str, help="Public URL for agent card")
     args = parser.parse_args()
 
     skill = AgentSkill(
-        id="task_fulfillment",
-        name="Task Fulfillment",
-        description="Handles user requests and completes tasks using FHIR tools",
-        tags=["fhir", "medical"],
+        id="fhir_task_fulfillment",
+        name="FHIR Task Fulfillment",
+        description="Answers medical questions and performs clinical tasks using FHIR data",
+        tags=["fhir", "medical", "healthcare"],
         examples=[],
     )
 
     agent_card = AgentCard(
-        name="FHIR Purple Agent",
-        description="Agent that answers medical questions using FHIR data",
+        name="FHIR Purple Agent (Messaging)",
+        description="Agent that answers medical questions using FHIR data via A2A messaging",
         url=args.card_url or f"http://{args.host}:{args.port}/",
         version="1.0.0",
         default_input_modes=["text"],
@@ -53,14 +56,13 @@ def main():
         agent_executor=Executor(),
         task_store=InMemoryTaskStore(),
     )
+
     server = A2AStarletteApplication(
         agent_card=agent_card,
         http_handler=request_handler,
     )
 
-    logger = logging.getLogger("fhir_purple_agent")
     logger.info(f"Starting purple agent at {args.host}:{args.port}")
-
     uvicorn.run(server.build(), host=args.host, port=args.port)
 
 
