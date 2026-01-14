@@ -19,5 +19,5 @@ uv run src/server.py --port 9009
 ## Docker
 ```bash
 docker build -t fhir-purple-agent-messaging .
-docker run --env-file .env -p 9002:9002 fhir-purple-agent-messaging
+docker run --env-file .env -p 9009:9009 fhir-purple-agent-messaging
 ```
