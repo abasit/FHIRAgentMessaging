@@ -5,7 +5,7 @@ A2A-compatible agent that answers medical questions using FHIR data.
 Receives tool calls via A2A messaging from the green agent.
 
 Usage:
-    python server.py --host 0.0.0.0 --port 9002
+    python server.py --host 0.0.0.0 --port 9009
 """
 
 import argparse
@@ -21,10 +21,11 @@ from a2a.types import AgentCapabilities, AgentCard, AgentSkill
 from executor import Executor
 
 logging.basicConfig(level=logging.WARNING)
-logging.getLogger("fhir_purple_agent").setLevel(logging.INFO)
 logging.getLogger("LiteLLM").setLevel(logging.WARNING)
 
+logging.getLogger("fhir_purple_agent").setLevel(logging.DEBUG)
 logger = logging.getLogger("fhir_purple_agent")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Run the FHIR purple agent (messaging mode).")
@@ -32,6 +33,8 @@ def main():
     parser.add_argument("--port", type=int, default=9009, help="Port to bind the server")
     parser.add_argument("--card-url", type=str, help="Public URL for agent card")
     args = parser.parse_args()
+
+    base_url = args.card_url or f"http://{args.host}:{args.port}"
 
     skill = AgentSkill(
         id="fhir_task_fulfillment",
@@ -44,7 +47,7 @@ def main():
     agent_card = AgentCard(
         name="FHIR Purple Agent (Messaging)",
         description="Agent that answers medical questions using FHIR data via A2A messaging",
-        url=args.card_url or f"http://{args.host}:{args.port}/",
+        url=base_url,
         version="1.0.0",
         default_input_modes=["text"],
         default_output_modes=["text"],
@@ -62,8 +65,8 @@ def main():
         http_handler=request_handler,
     )
 
-    logger.info(f"Starting purple agent at {args.host}:{args.port}")
-    uvicorn.run(server.build(), host=args.host, port=args.port)
+    logger.info(f"Starting purple agent at {base_url}")
+    uvicorn.run(server.build(), host=args.host, port=args.port, log_level="warning")
 
 
 if __name__ == '__main__':

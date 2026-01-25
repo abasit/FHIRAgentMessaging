@@ -44,7 +44,7 @@ class Executor(AgentExecutor):
         context_id = task.context_id
         agent = self.agents.get(context_id)
         if not agent:
-            agent = Agent()
+            agent = Agent(context_id)
             self.agents[context_id] = agent
 
         updater = TaskUpdater(event_queue, task.id, context_id)
